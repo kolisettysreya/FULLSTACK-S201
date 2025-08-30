@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        jdk 'JDK_HOME'
+        jdk 'JAVA_HOME'
         maven 'MAVEN_HOME'
     }
 
@@ -27,27 +27,18 @@ pipeline {
             }
         }
 
-       stage('Build React Frontend') {
-    steps {
-        script {
-            def nodeHome = tool name: 'NODE_HOME', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
-            env.PATH = "${nodeHome}/bin:${env.PATH}"
+           stage('Build React Frontend') {
+            steps {
+                script {
+                    def nodeHome = tool name: 'NODE_HOME', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                    env.PATH = "${nodeHome}/bin:${env.PATH}"
+                }
+                dir("${env.FRONTEND_DIR}") {
+                    sh 'npm install'
+                    sh 'npm run build'
+                }
+            }
         }
-        dir("${env.FRONTEND_DIR}") {
-            // Clean node_modules to avoid permission issues from previous builds
-            sh 'rm -rf node_modules package-lock.json'
-
-            // Fresh install
-            sh 'npm install'
-
-            // Fix vite binary permissions
-            sh 'chmod +x node_modules/.bin/vite'
-
-            // Build frontend
-            sh 'npm run build'
-        }
-    }
-}
 
 
         stage('Package React as WAR') {
